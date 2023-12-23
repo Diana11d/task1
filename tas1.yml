@@ -1,0 +1,49 @@
+- hosts: all
+  tasks:
+  - name: install the latest version of Apache
+    yum:
+      name: httpd
+      state: latest
+
+  - name: enable service httpd and ensure it is not masked
+    systemd:
+      name: httpd
+      enabled: yes
+
+- hosts: all
+  tasks:
+  - name: Disable SELinux
+    selinux:
+      state: disabled
+
+  - name: Install packages
+    yum:
+      name: "{{ packages }}"
+    vars:
+      packages:
+      - httpd
+      - unzip
+
+  - name: Start and Enable Apache
+    systemd:
+      name: httpd
+      state: started
+      enabled: yes  
+
+  - name: Download a Template
+    get_url:
+     url:  https://www.free-css.com/assets/files/free-css-templates/download/page282/royal-cars.zip
+     dest: /tmp/royal-cars.zip
+
+  - name: Extract Template
+    unarchive:
+      src: /tmp/royal-cars.zip
+      dest: /tmp/
+      remote_src: yes
+
+  - name: Move Template to /var/www/html
+    shell: mv /tmp/car-rental-html-template/* /var/www/html/  
+    args:
+      creates: /var/www/html/index.html
+
+
